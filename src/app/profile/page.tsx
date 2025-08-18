@@ -1,21 +1,19 @@
 // src/app/profile/page.tsx
-import { createClient } from '@/utils/supabase/server'
+import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { type Review } from '@/components/ReviewList';
 
-// BU SATIRI EKLEYİN: Sayfanın dinamik olmasını zorunlu kılar
 export const dynamic = 'force-dynamic';
 
-// Yorumlarla birlikte havayolu bilgilerini de alacağımız için yeni bir tip tanımlıyoruz
-type ReviewWithAirline = Review & {
-  airlines: {
+type ReviewWithCompany = Review & {
+  companies: {
     name: string;
     slug: string;
   } | null;
 };
 
-// Basit bir yıldız gösterim bileşeni
+// Basit bir yıldız gösterim bileşeni (EKSİK OLAN KISIM)
 const StarRating = ({ rating }: { rating: number }) => (
   <div className="flex items-center">
     {[...Array(5)].map((_, index) => (
@@ -33,29 +31,26 @@ const StarRating = ({ rating }: { rating: number }) => (
 
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
-  // 1. Kullanıcı oturumunu al
   const { data: { session } } = await supabase.auth.getSession();
 
-  // 2. Eğer kullanıcı giriş yapmamışsa, ana sayfaya yönlendir
   if (!session) {
     redirect('/');
   }
 
-  // 3. Sadece bu kullanıcıya ait olan yorumları, havayolu bilgileriyle birlikte çek
   const { data: reviews, error } = await supabase
     .from('reviews')
     .select(`
       *,
-      airlines (
+      companies (
         name,
         slug
       )
     `)
     .eq('user_id', session.user.id)
     .order('created_at', { ascending: false })
-    .returns<ReviewWithAirline[]>();
+    .returns<ReviewWithCompany[]>();
 
   if (error) {
     console.error("Error fetching reviews:", error);
@@ -64,24 +59,24 @@ export default async function ProfilePage() {
   return (
     <main className="container mx-auto px-6 py-32">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white">My Profile</h1>
-        <p className="text-gray-400 mt-2">Welcome, {session.user.email}</p>
+        <h1 className="text-4xl font-bold text-gray-900">My Profile</h1>
+        <p className="text-gray-600 mt-2">Welcome, {session.user.email}</p>
       </div>
 
-      <div className="bg-gray-800/50 p-8 rounded-xl border border-gray-700/50">
-        <h2 className="text-2xl font-semibold text-white mb-6">My Reviews ({reviews?.length || 0})</h2>
+      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6">My Reviews ({reviews?.length || 0})</h2>
         
         {reviews && reviews.length > 0 ? (
           <div className="space-y-6">
             {reviews.map((review) => (
-              <div key={review.id} className="border-b border-gray-700 pb-6 last:border-b-0 last:pb-0">
-                {review.airlines && (
-                  <Link href={`/airlines/${review.airlines.slug}`} className="text-xl font-bold text-white hover:text-blue-400 transition-colors">
-                    {review.airlines.name}
+              <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+                {review.companies && (
+                  <Link href={`/companies/${review.companies.slug}`} className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
+                    {review.companies.name}
                   </Link>
                 )}
                 {review.rating && <StarRating rating={review.rating} />}
-                <p className="text-gray-300 mt-2">{review.content}</p>
+                <p className="text-gray-700 mt-2">{review.content}</p>
                 <p className="text-xs text-gray-500 mt-3">
                   Reviewed on: {new Date(review.created_at).toLocaleDateString()}
                 </p>
@@ -89,7 +84,7 @@ export default async function ProfilePage() {
             ))}
           </div>
         ) : (
-          <p className="text-gray-400">You haven`t submitted any reviews yet.</p>
+          <p className="text-gray-500">You haven`t submitted any reviews yet.</p>
         )}
       </div>
     </main>

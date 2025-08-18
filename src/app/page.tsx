@@ -22,7 +22,7 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="mt-6 text-lg leading-8 text-gray-600">
-            Read and share your experiences with companies. Your voice matters.
+            Share what you think about companies. Your voice matters.
           </p>
           
           <div className="mt-10">
@@ -31,10 +31,10 @@ export default function HomePage() {
 
           <div className="mt-8 flex items-center justify-center gap-x-6">
             <Link
-              href="/airlines"
+              href="/companies"
               className="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors"
             >
-              Or browse all airlines &rarr;
+              Or browse all companies &rarr;
             </Link>
           </div>
         </div>

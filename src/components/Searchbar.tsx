@@ -51,7 +51,7 @@ export default function Searchbar() {
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search for an airline..."
+        placeholder="Search for a company..."
         className="w-full px-5 py-3 text-lg bg-gray-800/80 border border-gray-700 rounded-full text-white placeholder-white focus:outline-none focus:ring-2 focus:ring-blue-500 backdrop-blur-sm"
       />
       {/* Arama Sonuçları */}

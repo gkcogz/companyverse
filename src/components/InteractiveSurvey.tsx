@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { type Review } from '@/components/ReviewList';
 import { createClient } from '@/utils/supabase/client';
+import { type Company } from './CompanyCard'; // Company tipini import ediyoruz
 
 // --- Bileşen Dışı Yardımcılar ---
 const EMOJI_OPTIONS = [
@@ -44,7 +45,7 @@ const StarRatingInput = ({ rating, setRating }: { rating: number, setRating: (r:
 };
 
 // --- Ana Anket Bileşeni ---
-const InteractiveSurvey = ({ airlineId, user, onSurveyComplete }: { airlineId: number, user: User, onSurveyComplete: (newReview: Review) => void }) => {
+const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Company, user: User, onSurveyComplete: (newReview: Review) => void }) => {
   const [step, setStep] = useState(1);
   
   // Anket verilerini saklamak için state'ler
@@ -61,7 +62,7 @@ const InteractiveSurvey = ({ airlineId, user, onSurveyComplete }: { airlineId: n
 
   const handleMoodSelect = (emoji: string, defaultRating: number) => {
     setMood(emoji);
-    setRating(defaultRating); // Emoji'ye göre varsayılan bir puan atayalım
+    setRating(defaultRating);
     setStep(2);
   };
 
@@ -81,11 +82,10 @@ const InteractiveSurvey = ({ airlineId, user, onSurveyComplete }: { airlineId: n
     setIsSubmitting(true);
     setError(null);
 
-    // Yorum metnini emoji ve etiketlerle birleştirelim (AI için harika veri)
     const finalContent = `Mood: ${mood}\nTags: ${selectedTags.join(', ')}\n\n${content}`;
 
     const { data: newReview, error: insertError } = await supabase.from('reviews').insert({
-      airline_id: airlineId,
+      company_id: company.id, // 'airlineId' yerine 'company.id' kullanılıyor
       user_id: user.id,
       rating: rating,
       content: finalContent,
@@ -96,20 +96,19 @@ const InteractiveSurvey = ({ airlineId, user, onSurveyComplete }: { airlineId: n
       console.error("Error inserting review:", insertError);
     } else if (newReview) {
       onSurveyComplete(newReview);
-      // Formu sıfırla veya bir "Teşekkürler" mesajı göster
-      setStep(4); // "Teşekkürler" adımına geç
+      setStep(4);
     }
     setIsSubmitting(false);
   };
 
   // --- JSX Arayüzü ---
   return (
-    <div className="mt-8 border-t border-gray-700/50 pt-8">
+    <div className="mt-8 border-t border-gray-200 pt-8">
       
       {step === 1 && (
         <div>
-          <h3 className="text-2xl font-semibold text-black">How was your flight experience?</h3>
-          <p className="text-gray-600 mt-2">Summarize your flight with a single emoji.</p>
+          <h3 className="text-2xl font-semibold text-gray-900">How was your experience with {company.name}?</h3>
+          <p className="text-gray-600 mt-2">Summarize your experience with a single emoji.</p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
             {EMOJI_OPTIONS.map((option) => (
               <button
@@ -117,12 +116,12 @@ const InteractiveSurvey = ({ airlineId, user, onSurveyComplete }: { airlineId: n
                 onClick={() => handleMoodSelect(option.emoji, option.rating)}
                 className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-300 w-24 h-24 justify-center
                   ${mood === option.emoji 
-                    ? 'border-blue-500 bg-blue-500/20' 
-                    : 'border-transparent hover:bg-gray-400/50'}
+                    ? 'border-blue-500 bg-blue-100' 
+                    : 'border-transparent hover:bg-gray-100'}
                 `}
               >
                 <span className="text-4xl">{option.emoji}</span>
-                <span className="text-xs mt-1 text-black">{option.label}</span>
+                <span className="text-xs mt-1 text-gray-700">{option.label}</span>
               </button>
             ))}
           </div>
@@ -131,52 +130,52 @@ const InteractiveSurvey = ({ airlineId, user, onSurveyComplete }: { airlineId: n
       
       {step === 2 && (
         <div>
-          <h3 className="text-2xl font-semibold text-black">What stood out?</h3>
-          <p className="text-gray-600 mt-2">Select the good and bad aspects of your experience. You can select multiple.</p>
+          <h3 className="text-2xl font-semibold text-gray-900">What stood out?</h3>
+          <p className="text-gray-600 mt-2">Select the good and bad aspects of your experience.</p>
           
           <div className="mt-6">
-            <h4 className="font-semibold text-black">The Good:</h4>
+            <h4 className="font-semibold text-gray-900">The Good:</h4>
             <div className="flex flex-wrap gap-2 mt-2">
               {POSITIVE_TAGS.map(tag => (
                 <button 
                   key={tag} 
-                  onClick={() => handleTagToggle(tag)}
+                  onClick={() => handleTagToggle(`+ ${tag}`)}
                   className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    selectedTags.includes(tag)
-                      ? 'bg-green-500/20 border-green-500 text-white'
-                      : 'bg-gray-700/50 border-gray-600 text-white hover:border-gray-400'
+                    selectedTags.includes(`+ ${tag}`)
+                      ? 'bg-green-100 border-green-400 text-green-800'
+                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:border-gray-400'
                   }`}
                 >
-                  + {tag}
+                  {tag}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="mt-6">
-            <h4 className="font-semibold text-black">The Bad:</h4>
+            <h4 className="font-semibold text-gray-900">The Bad:</h4>
             <div className="flex flex-wrap gap-2 mt-2">
               {NEGATIVE_TAGS.map(tag => (
                 <button 
                   key={tag} 
-                  onClick={() => handleTagToggle(tag)}
+                  onClick={() => handleTagToggle(`- ${tag}`)}
                   className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    selectedTags.includes(tag)
-                      ? 'bg-red-500/20 border-red-500 text-white'
-                      : 'bg-gray-700/50 border-gray-600 text-white hover:border-gray-400'
+                    selectedTags.includes(`- ${tag}`)
+                      ? 'bg-red-100 border-red-400 text-red-800'
+                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:border-gray-400'
                   }`}
                 >
-                  - {tag}
+                  {tag}
                 </button>
               ))}
             </div>
           </div>
           
           <div className="mt-8 flex justify-between items-center">
-            <button onClick={() => setStep(1)} className="text-sm text-gray-400 hover:text-black">← Back</button>
+            <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900">← Back</button>
             <button 
               onClick={() => setStep(3)} 
-              className="rounded-md bg-blue-500 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-400"
+              className="rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
             >
               Next
             </button>
@@ -186,31 +185,31 @@ const InteractiveSurvey = ({ airlineId, user, onSurveyComplete }: { airlineId: n
 
       {step === 3 && (
         <div>
-          <h3 className="text-2xl font-semibold text-black">Any other details?</h3>
+          <h3 className="text-2xl font-semibold text-gray-900">Any other details?</h3>
           <p className="text-gray-600 mt-2">Optionally, add a comment and confirm your final rating.</p>
           <div className="mt-4 space-y-4">
             <div>
-              <label htmlFor="content" className="block text-sm font-medium text-gray-500">Your Experience (Optional)</label>
+              <label htmlFor="content" className="block text-sm font-medium text-gray-700">Your Experience (Optional)</label>
               <textarea
                 id="content"
                 rows={4}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md text-white p-2"
+                className="mt-1 block w-full bg-white border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900 p-2"
                 placeholder="What was your experience like?"
               ></textarea>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-2">Final Rating</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Final Rating</label>
               <StarRatingInput rating={rating} setRating={setRating} />
             </div>
           </div>
            <div className="mt-8 flex justify-between items-center">
-            <button onClick={() => setStep(2)} className="text-sm text-gray-400 hover:text-black">← Back</button>
+            <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-gray-900">← Back</button>
             <button 
               onClick={handleSubmit} 
               disabled={isSubmitting}
-              className="inline-flex justify-center py-2 px-4 rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-semibold rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Review'}
             </button>
