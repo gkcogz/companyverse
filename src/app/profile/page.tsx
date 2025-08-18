@@ -33,7 +33,7 @@ const StarRating = ({ rating }: { rating: number }) => (
 
 
 export default async function ProfilePage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 1. Kullanıcı oturumunu al
   const { data: { session } } = await supabase.auth.getSession();
