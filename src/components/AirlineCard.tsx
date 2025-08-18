@@ -1,6 +1,7 @@
 // src/components/AirlineCard.tsx
 import Link from 'next/link';
 import Image from 'next/image';
+import React from "react";
 
 // Airline verisinin tipini belirliyoruz
 export type Airline = {
@@ -11,7 +12,7 @@ export type Airline = {
   logo_url?: string | null;
 }
 
-const AirlineCard = ({ airline }: { airline: Airline }): JSX.Element => {
+const AirlineCard: React.FC<{ airline: Airline }> = ({ airline }) => {
   return (
     <Link 
       href={`/airlines/${airline.slug}`}
