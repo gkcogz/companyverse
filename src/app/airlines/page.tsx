@@ -14,7 +14,7 @@ export type Airline = {
 };
 
 export default async function AirlinesPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: airlines, error } = await supabase
     .from("airlines")
