@@ -1,7 +1,15 @@
-import type { NextConfig } from "next";
+// next.config.ts
+import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const config: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'ntbilnvvyfpvcrqoniha.supabase.co', // BURAYI GÜNCELLEYİN
+      },
+    ],
+  },
 };
 
-export default nextConfig;
+export default config;
