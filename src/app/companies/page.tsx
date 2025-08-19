@@ -1,6 +1,6 @@
 // src/app/companies/page.tsx
 import { createClient } from '@/utils/supabase/server';
-import CompanyCard from "@/components/CompanyCard"; // AirlineCard -> CompanyCard
+import CompanyCard from "@/components/CompanyCard";
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/solid';
 
@@ -9,16 +9,16 @@ export type Company = {
   id: number;
   name: string;
   slug: string;
-  country: string;
+  country: string | null; // Nullable olarak güncellendi
   logo_url?: string | null;
-  category?: string | null; // Kategori ekleyebiliriz
+  category?: string | null;
 };
 
 export default async function CompaniesPage() {
-  const supabase = await createClient();
+  const supabase = await createClient(); // await eklendi
 
   const { data: companies, error } = await supabase
-    .from("companies") // "airlines" -> "companies"
+    .from("companies")
     .select("*")
     .returns<Company[]>();
 
