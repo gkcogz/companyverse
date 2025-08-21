@@ -1,10 +1,9 @@
 // netlify/functions/generate-summary.ts
-import type { Handler, HandlerEvent } from "@netlify/functions";
+import type { Handler as NetlifyHandler, HandlerEvent } from "@netlify/functions";
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 
 // Supabase ve OpenAI client'larını fonksiyon dışında oluşturuyoruz
-// Bu sayede her istekte yeniden oluşturulmazlar, performansı artırır
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_KEY! // Sunucu tarafı olduğu için SERVICE_KEY kullanıyoruz
@@ -14,8 +13,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-
-const handler: Handler = async (event: HandlerEvent) => {
+const handler: NetlifyHandler = async (event: HandlerEvent) => {
   const companyId = event.queryStringParameters?.companyId;
 
   if (!companyId) {
@@ -89,9 +87,15 @@ const handler: Handler = async (event: HandlerEvent) => {
 
   } catch (error) {
     console.error("Error in generate-summary function:", error);
+    
+    let errorMessage = "An unknown error occurred.";
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    
     return {
-      statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+        statusCode: 500,
+        body: JSON.stringify({ error: errorMessage }),
     };
   }
 };
