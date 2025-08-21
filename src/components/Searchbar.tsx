@@ -51,7 +51,8 @@ export default function Searchbar() {
         className="w-full px-5 py-3 text-lg bg-white border border-gray-300 rounded-full text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
       />
       {query.length > 1 && (
-        <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-10 overflow-hidden">
+        // DEĞİŞİKLİK: Sonuçların alttaki logodan (z-10) daima üstte olmasını garantilemek için z-index "z-20" yapıldı.
+        <div className="absolute top-full mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden">
           {loading && <div className="p-4 text-gray-500">Searching...</div>}
           {!loading && results.length > 0 && (
             <ul>

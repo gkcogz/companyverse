@@ -41,8 +41,17 @@ export function useReviewAnalytics(reviews: Review[]) {
     });
 
     const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
-    const topPositiveTags = sortedTags.filter(([tag]) => tag.startsWith('+')).slice(0, 2);
-    const topNegativeTags = sortedTags.filter(([tag]) => tag.startsWith('-')).slice(0, 2);
+    
+    // Yüzde oranlarını da içeren etiket objeleri oluşturuyoruz
+    const topPositiveTags = sortedTags
+      .filter(([tag]) => tag.startsWith('+'))
+      .slice(0, 3)
+      .map(([tag, count]) => ({ tag, count, percentage: (count / totalReviews) * 100 }));
+
+    const topNegativeTags = sortedTags
+      .filter(([tag]) => tag.startsWith('-'))
+      .slice(0, 3)
+      .map(([tag, count]) => ({ tag, count, percentage: (count / totalReviews) * 100 }));
 
     return { averageRating, totalReviews, ratingDistribution, topPositiveTags, topNegativeTags };
   }, [reviews]);
