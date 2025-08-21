@@ -5,9 +5,9 @@ import { useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { type Review } from '@/components/ReviewList';
 import { createClient } from '@/utils/supabase/client';
-import { type Company } from './CompanyCard'; // Company tipini import ediyoruz
+import { type Company } from './CompanyCard';
 
-// --- Bileşen Dışı Yardımcılar ---
+// --- Helper Components & Constants ---
 const EMOJI_OPTIONS = [
   { emoji: '😠', label: 'Very Bad', rating: 1 },
   { emoji: '😐', label: 'Okay', rating: 2 },
@@ -28,7 +28,7 @@ const StarRatingInput = ({ rating, setRating }: { rating: number, setRating: (r:
           <svg
             key={starValue}
             className={`w-8 h-8 cursor-pointer transition-colors ${
-              starValue <= (hoverRating || rating) ? 'text-yellow-400' : 'text-gray-600'
+              starValue <= (hoverRating || rating) ? 'text-yellow-400' : 'text-gray-300' // Updated color
             }`}
             fill="currentColor"
             viewBox="0 0 20 20"
@@ -44,20 +44,15 @@ const StarRatingInput = ({ rating, setRating }: { rating: number, setRating: (r:
   );
 };
 
-// --- Ana Anket Bileşeni ---
+// --- Main Survey Component ---
 const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Company, user: User, onSurveyComplete: (newReview: Review) => void }) => {
   const [step, setStep] = useState(1);
-  
-  // Anket verilerini saklamak için state'ler
   const [mood, setMood] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(0);
-
-  // Gönderme ve hata durumları için state'ler
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const supabase = createClient();
 
   const handleMoodSelect = (emoji: string, defaultRating: number) => {
@@ -68,9 +63,7 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
 
   const handleTagToggle = (tag: string) => {
     setSelectedTags(prevTags => 
-      prevTags.includes(tag)
-        ? prevTags.filter(t => t !== tag)
-        : [...prevTags, tag]
+      prevTags.includes(tag) ? prevTags.filter(t => t !== tag) : [...prevTags, tag]
     );
   };
 
@@ -81,11 +74,9 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
     }
     setIsSubmitting(true);
     setError(null);
-
     const finalContent = `Mood: ${mood}\nTags: ${selectedTags.join(', ')}\n\n${content}`;
-
     const { data: newReview, error: insertError } = await supabase.from('reviews').insert({
-      company_id: company.id, // 'airlineId' yerine 'company.id' kullanılıyor
+      company_id: company.id,
       user_id: user.id,
       rating: rating,
       content: finalContent,
@@ -101,10 +92,8 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
     setIsSubmitting(false);
   };
 
-  // --- JSX Arayüzü ---
   return (
     <div className="mt-8 border-t border-gray-200 pt-8">
-      
       {step === 1 && (
         <div>
           <h3 className="text-2xl font-semibold text-gray-900">How was your experience with {company.name}?</h3>
@@ -114,11 +103,9 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
               <button
                 key={option.label}
                 onClick={() => handleMoodSelect(option.emoji, option.rating)}
-                className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-300 w-24 h-24 justify-center
-                  ${mood === option.emoji 
-                    ? 'border-blue-500 bg-blue-100' 
-                    : 'border-transparent hover:bg-gray-100'}
-                `}
+                className={`flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-300 w-24 h-24 justify-center ${
+                  mood === option.emoji ? 'border-blue-500 bg-blue-100' : 'border-transparent hover:bg-gray-100'
+                }`}
               >
                 <span className="text-4xl">{option.emoji}</span>
                 <span className="text-xs mt-1 text-gray-700">{option.label}</span>
@@ -132,7 +119,6 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
         <div>
           <h3 className="text-2xl font-semibold text-gray-900">What stood out?</h3>
           <p className="text-gray-600 mt-2">Select the good and bad aspects of your experience.</p>
-          
           <div className="mt-6">
             <h4 className="font-semibold text-gray-900">The Good:</h4>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -141,9 +127,7 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
                   key={tag} 
                   onClick={() => handleTagToggle(`+ ${tag}`)}
                   className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    selectedTags.includes(`+ ${tag}`)
-                      ? 'bg-green-100 border-green-400 text-green-800'
-                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:border-gray-400'
+                    selectedTags.includes(`+ ${tag}`) ? 'bg-green-100 border-green-400 text-green-800' : 'bg-gray-100 border-gray-300 text-gray-700 hover:border-gray-400'
                   }`}
                 >
                   {tag}
@@ -151,7 +135,6 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
               ))}
             </div>
           </div>
-
           <div className="mt-6">
             <h4 className="font-semibold text-gray-900">The Bad:</h4>
             <div className="flex flex-wrap gap-2 mt-2">
@@ -160,9 +143,7 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
                   key={tag} 
                   onClick={() => handleTagToggle(`- ${tag}`)}
                   className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                    selectedTags.includes(`- ${tag}`)
-                      ? 'bg-red-100 border-red-400 text-red-800'
-                      : 'bg-gray-100 border-gray-300 text-gray-700 hover:border-gray-400'
+                    selectedTags.includes(`- ${tag}`) ? 'bg-red-100 border-red-400 text-red-800' : 'bg-gray-100 border-gray-300 text-gray-700 hover:border-gray-400'
                   }`}
                 >
                   {tag}
@@ -170,13 +151,9 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
               ))}
             </div>
           </div>
-          
           <div className="mt-8 flex justify-between items-center">
             <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-gray-900">← Back</button>
-            <button 
-              onClick={() => setStep(3)} 
-              className="rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
-            >
+            <button onClick={() => setStep(3)} className="rounded-md bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
               Next
             </button>
           </div>
@@ -204,7 +181,7 @@ const InteractiveSurvey = ({ company, user, onSurveyComplete }: { company: Compa
               <StarRatingInput rating={rating} setRating={setRating} />
             </div>
           </div>
-           <div className="mt-8 flex justify-between items-center">
+          <div className="mt-8 flex justify-between items-center">
             <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-gray-900">← Back</button>
             <button 
               onClick={handleSubmit} 

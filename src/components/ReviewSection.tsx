@@ -1,34 +1,40 @@
 // src/components/ReviewSection.tsx
 'use client';
 
+import { useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { type Company } from '@/components/CompanyCard';
 import { type Review } from '@/components/ReviewList';
 import InteractiveSurvey from "@/components/InteractiveSurvey";
 import ReviewList from "@/components/ReviewList";
 
-// Bu bileşenin alacağı props'ların tipi
+// Props tipi güncellendi: onSurveyComplete kaldırıldı, reviews -> initialReviews oldu
 type ReviewSectionProps = {
-  // DEĞİŞİKLİK: 'company' prop'unun tipi, 'Company' tipiyle tam uyumlu hale getirildi.
   company: Company; 
-  reviews: Review[];
+  initialReviews: Review[];
   user: User | null;
-  onSurveyComplete: (newReview: Review) => void;
 };
 
-const ReviewSection = ({ company, reviews, user, onSurveyComplete }: ReviewSectionProps) => {
+const ReviewSection = ({ company, initialReviews, user }: ReviewSectionProps) => {
+  // Sunucudan gelen ilk yorumları state'e aktarıyoruz
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+
+  // Yeni bir anket tamamlandığında çalışacak lokal fonksiyon
+  const handleSurveyComplete = (newReview: Review) => {
+    // Yeni yorumu mevcut listenin başına ekleyerek anında UI'da gösteriyoruz
+    setReviews([newReview, ...reviews]);
+  };
+
   return (
     <div className="mt-12">
-      {/* Kategoriye göre anket gösterimini burada kontrol ediyoruz */}
       {user && company.category === 'Aviation' && (
         <InteractiveSurvey 
           company={company} 
           user={user} 
-          onSurveyComplete={onSurveyComplete} 
+          onSurveyComplete={handleSurveyComplete} // Lokal fonksiyonu prop olarak geçiyoruz
         />
       )}
       
-      {/* Biyoteknoloji gibi kategoriler için buraya farklı bir içerik gelecek */}
       {company.category !== 'Aviation' && (
          <div className="mt-8 border-t border-gray-200 pt-8">
            <h3 className="text-2xl font-semibold text-gray-900">Information</h3>

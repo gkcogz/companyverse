@@ -3,7 +3,9 @@ import { createClient } from '@/utils/supabase/server';
 import type { Metadata } from 'next';
 import CompanyDetailClientWrapper from '@/components/CompanyDetailClientWrapper';
 import { notFound } from 'next/navigation';
-import { calculateAnalytics } from '@/lib/analytics'; // Yeni analiz yardımcısı fonksiyonu
+import { calculateAnalytics } from '@/lib/analytics';
+import { type Company } from '@/components/CompanyCard';
+import { type Review } from '@/components/ReviewList';
 
 type Props = {
   params: { slug: string }
@@ -39,7 +41,6 @@ export default async function CompanyDetailPage({ params }: Props) {
   const reviews = company.reviews?.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) || [];
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Sunucu tarafında ilk analizleri yapıyoruz (SEO ve ilk yükleme için)
   const initialAnalytics = calculateAnalytics(reviews);
 
   const structuredData = {
@@ -60,10 +61,9 @@ export default async function CompanyDetailPage({ params }: Props) {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
-      {/* Tüm veriyi ve state yönetimini istemci tarafındaki bu tek bileşene devrediyoruz */}
       <CompanyDetailClientWrapper
-        initialCompany={company}
-        initialReviews={reviews}
+        initialCompany={company as Company & { reviews: Review[], description: string | null, ai_summary: string | null }}
+        initialReviews={reviews as Review[]}
         initialAnalytics={initialAnalytics}
         user={user}
       />
