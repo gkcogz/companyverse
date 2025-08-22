@@ -1,37 +1,28 @@
 // src/components/ReviewSection.tsx
 'use client';
 
-import { useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { type Company } from '@/components/CompanyCard';
 import { type Review } from '@/components/ReviewList';
 import InteractiveSurvey from "@/components/InteractiveSurvey";
 import ReviewList from "@/components/ReviewList";
 
-// Props tipi güncellendi: onSurveyComplete kaldırıldı, reviews -> initialReviews oldu
+// This is the part that needs to be corrected
 type ReviewSectionProps = {
   company: Company; 
-  initialReviews: Review[];
+  reviews: Review[]; // Renamed from initialReviews for clarity
   user: User | null;
+  onNewReview: (newReview: Review) => void; // Added onNewReview
 };
 
-const ReviewSection = ({ company, initialReviews, user }: ReviewSectionProps) => {
-  // Sunucudan gelen ilk yorumları state'e aktarıyoruz
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
-
-  // Yeni bir anket tamamlandığında çalışacak lokal fonksiyon
-  const handleSurveyComplete = (newReview: Review) => {
-    // Yeni yorumu mevcut listenin başına ekleyerek anında UI'da gösteriyoruz
-    setReviews([newReview, ...reviews]);
-  };
-
+const ReviewSection = ({ company, reviews, user, onNewReview }: ReviewSectionProps) => {
   return (
     <div className="mt-12">
       {user && company.category === 'Aviation' && (
         <InteractiveSurvey 
           company={company} 
           user={user} 
-          onSurveyComplete={handleSurveyComplete} // Lokal fonksiyonu prop olarak geçiyoruz
+          onSurveyComplete={onNewReview} // onSurveyComplete now uses onNewReview
         />
       )}
       

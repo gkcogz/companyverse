@@ -4,18 +4,17 @@ import CompanyCard from "@/components/CompanyCard";
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/solid';
 
-// Tip tanımını güncelliyoruz
 export type Company = {
   id: number;
   name: string;
   slug: string;
-  country: string | null; // Nullable olarak güncellendi
+  country: string | null;
   logo_url?: string | null;
   category?: string | null;
 };
 
 export default async function CompaniesPage() {
-  const supabase = await createClient(); // await eklendi
+  const supabase = await createClient(); // Corrected: Added await
 
   const { data: companies, error } = await supabase
     .from("companies")
@@ -29,14 +28,12 @@ export default async function CompaniesPage() {
 
   return (
     <main className="container mx-auto px-6 py-24 sm:py-32">
-      {/* Ana Sayfaya Geri Dön Linki */}
       <div className="mb-8">
         <Link href="/" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 transition-colors">
           <ChevronLeftIcon className="w-5 h-5 mr-2" />
           Back to Main Page
         </Link>
       </div>
-
       <h1 className="text-4xl font-bold text-gray-900 mb-8">All Companies</h1>
       
       {companies && companies.length > 0 ? (

@@ -2,36 +2,48 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@/utils/supabase/server';
 
-// Sitenizin tam URL'sini buraya ekleyin
-const BASE_URL = 'https://companyverse.co'; 
+const BASE_URL = 'https://companyverse.co';
+
+// Define a type for the data you expect from Supabase
+type CompanySitemapEntry = {
+  slug: string;
+  updated_at: string;
+};
+
+type PostSitemapEntry = {
+  slug: string;
+  updated_at: string;
+};
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = createClient();
+  const supabase = await createClient(); // Added await
 
-  // Veritabanından tüm şirketlerin slug'larını çekiyoruz
-  const { data: companies, error } = await supabase
+  // 1. Fetch Companies
+  const { data: companies } = await supabase
     .from('companies')
-    .select('slug, updated_at'); // updated_at, Google'a sayfanın ne zaman güncellendiğini söyler
+    .select('slug, updated_at');
 
-  if (error) {
-    console.error('Sitemap için şirketler çekilirken hata oluştu:', error);
-    // Hata olursa en azından statik sayfaları döndür
-    return [
-      { url: BASE_URL, lastModified: new Date() },
-      { url: `${BASE_URL}/about`, lastModified: new Date() },
-      { url: `${BASE_URL}/blog`, lastModified: new Date() },
-    ];
-  }
-
-  // Her şirket için dinamik URL'ler oluştur
-  const companyUrls = companies?.map(({ slug, updated_at }) => ({
+  const companyUrls = companies?.map(({ slug, updated_at }: CompanySitemapEntry) => ({
     url: `${BASE_URL}/companies/${slug}`,
-    lastModified: updated_at ? new Date(updated_at) : new Date(),
+    lastModified: new Date(updated_at),
     changeFrequency: 'weekly' as const,
-    priority: 0.9, // Bu sayfalar yüksek öncelikli
+    priority: 0.9,
   })) ?? [];
 
-  // Statik sayfalar
+  // 2. Fetch Blog Posts
+  const { data: posts } = await supabase
+    .from('posts')
+    .select('slug, updated_at');
+
+  const postUrls = posts?.map(({ slug, updated_at }: PostSitemapEntry) => ({
+    url: `${BASE_URL}/blog/${slug}`,
+    lastModified: new Date(updated_at),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  })) ?? [];
+  
+
+  // Static pages
   const staticUrls = [
     {
       url: BASE_URL,
@@ -43,7 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${BASE_URL}/about`,
       lastModified: new Date(),
       changeFrequency: 'yearly' as const,
-      priority: 0.7,
+      priority: 0.6,
     },
     {
       url: `${BASE_URL}/blog`,
@@ -53,6 +65,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
   
-  // Statik ve dinamik URL'leri birleştirerek tam site haritasını döndür
-  return [...staticUrls, ...companyUrls];
+  // 3. Combine and return all URLs
+  return [...staticUrls, ...companyUrls, ...postUrls];
 }
