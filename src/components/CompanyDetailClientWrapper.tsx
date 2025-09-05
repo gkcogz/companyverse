@@ -9,7 +9,7 @@ import ReviewSection from '@/components/ReviewSection';
 import { type Company } from '@/components/CompanyCard';
 import { type Review } from "@/components/ReviewList";
 import { User } from '@supabase/supabase-js';
-import { calculateAnalytics, type AnalyticsData } from '@/lib/analytics'; // Ensure AnalyticsData is exported from your analytics file
+import { calculateAnalytics, type AnalyticsData } from '@/lib/analytics';
 
 type WrapperProps = {
   initialCompany: Company & { reviews: Review[], description: string | null; ai_summary: string | null };
@@ -27,16 +27,17 @@ export default function CompanyDetailClientWrapper({
   const [reviews, setReviews] = useState(initialReviews);
   const [analytics, setAnalytics] = useState(initialAnalytics);
 
-  // This function runs when a new review is submitted
   const handleNewReview = (newReview: Review) => {
-    // 1. Add the new review to the beginning of the review list
     const updatedReviews = [newReview, ...reviews];
     setReviews(updatedReviews);
-
-    // 2. Recalculate the analytics based on the new list
     const updatedAnalytics = calculateAnalytics(updatedReviews);
     setAnalytics(updatedAnalytics);
   };
+
+  // Find if the current user has already submitted a review for this company
+  const existingUserReview = user 
+    ? reviews.find(review => review.profiles?.id === user.id)
+    : undefined;
 
   return (
     <main className="container mx-auto px-6 py-24 sm:py-32">
@@ -48,7 +49,6 @@ export default function CompanyDetailClientWrapper({
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-12">
         <aside className="lg:col-span-1">
-          {/* CompanyInfoCard now uses the updated 'analytics' state */}
           <CompanyInfoCard 
             company={initialCompany} 
             analytics={analytics}
@@ -56,12 +56,12 @@ export default function CompanyDetailClientWrapper({
         </aside>
         <div className="lg:col-span-2">
           <h1 className="text-5xl font-bold text-gray-900">{initialCompany.name}</h1>
-          {/* ReviewSection receives the function to notify it of a new review */}
           <ReviewSection 
             company={initialCompany}
-            reviews={reviews} // Corrected: This now uses the updated 'reviews' state
+            reviews={reviews}
             user={user}
-            onNewReview={handleNewReview} // Corrected: This prop should be handled by ReviewSection
+            onNewReview={handleNewReview}
+            existingUserReview={existingUserReview} // Pass the existing review to the component
           />
         </div>
       </div>

@@ -1,92 +1,126 @@
 // src/app/profile/page.tsx
-import { createClient } from '@/utils/supabase/server';
-import { redirect } from 'next/navigation';
+'use client'; 
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 import { type Review } from '@/components/ReviewList';
+import { ChatBubbleLeftRightIcon, StarIcon } from '@heroicons/react/24/outline';
+import EditReviewModal from '@/components/EditReviewModal';
+import { User } from '@supabase/supabase-js';
+import ReviewList from '@/components/ReviewList'; // ReviewList'i import ediyoruz
 
-export const dynamic = 'force-dynamic';
+export default function ProfilePage() {
+  const supabase = createClient();
+  const [user, setUser] = useState<User | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
 
-type ReviewWithCompany = Review & {
-  companies: {
-    name: string;
-    slug: string;
-  } | null;
-};
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<Review | null>(null);
 
-// Basit bir yıldız gösterim bileşeni (EKSİK OLAN KISIM)
-const StarRating = ({ rating }: { rating: number }) => (
-  <div className="flex items-center">
-    {[...Array(5)].map((_, index) => (
-      <svg
-        key={index}
-        className={`w-4 h-4 ${index < rating ? 'text-yellow-400' : 'text-gray-600'}`}
-        fill="currentColor"
-        viewBox="0 0 20 20"
-      >
-        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-      </svg>
-    ))}
-  </div>
-);
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        window.location.href = '/';
+        return;
+      }
+      setUser(session.user);
 
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`*, companies (name, slug), profiles (username, avatar_url)`)
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+        .returns<Review[]>();
 
-export default async function ProfilePage() {
-  const supabase = await createClient();
+      if (error) {
+        console.error("Error fetching reviews:", error);
+      } else if (data) {
+        setReviews(data);
+      }
+      setLoading(false);
+    };
 
-  const { data: { session } } = await supabase.auth.getSession();
+    fetchData();
+  }, [supabase]);
 
-  if (!session) {
-    redirect('/');
-  }
+  const handleEditClick = (review: Review) => {
+    setSelectedReview(review);
+    setIsModalOpen(true);
+  };
 
-  const { data: reviews, error } = await supabase
-    .from('reviews')
-    .select(`
-      *,
-      companies (
-        name,
-        slug
-      )
-    `)
-    .eq('user_id', session.user.id)
-    .order('created_at', { ascending: false })
-    .returns<ReviewWithCompany[]>();
-
-  if (error) {
-    console.error("Error fetching reviews:", error);
-  }
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedReview(null);
+  };
   
-  return (
-    <main className="container mx-auto px-6 py-32">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">My Profile</h1>
-        <p className="text-gray-600 mt-2">Welcome, {session.user.email}</p>
-      </div>
+  const handleReviewUpdated = (updatedReview: Review) => {
+    setReviews(prevReviews => 
+      prevReviews.map(r => (r.id === updatedReview.id ? { ...r, ...updatedReview } : r))
+    );
+  };
+  
+  const totalReviews = reviews.length;
+  const averageRatingGiven = totalReviews > 0
+    ? (reviews.reduce((acc, review) => acc + (review.rating || 0), 0) / totalReviews).toFixed(1)
+    : 'N/A';
 
-      <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6">My Reviews ({reviews?.length || 0})</h2>
-        
-        {reviews && reviews.length > 0 ? (
-          <div className="space-y-6">
-            {reviews.map((review) => (
-              <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
-                {review.companies && (
-                  <Link href={`/companies/${review.companies.slug}`} className="text-xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-                    {review.companies.name}
-                  </Link>
-                )}
-                {review.rating && <StarRating rating={review.rating} />}
-                <p className="text-gray-700 mt-2">{review.content}</p>
-                <p className="text-xs text-gray-500 mt-3">
-                  Reviewed on: {new Date(review.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
+  if (loading) {
+    return <p className="text-center text-gray-500 mt-40">Loading profile...</p>;
+  }
+
+  return (
+    <>
+      <main className="container mx-auto px-6 py-24 sm:py-32">
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold text-gray-900">My Profile</h1>
+          <p className="text-gray-600 mt-2">Welcome, {user?.email}</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-start space-x-4">
+            <div className="bg-blue-100 p-3 rounded-lg">
+              <ChatBubbleLeftRightIcon className="w-6 h-6 text-blue-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Total Reviews</p>
+              <p className="text-2xl font-bold text-gray-900">{totalReviews}</p>
+            </div>
           </div>
-        ) : (
-          <p className="text-gray-500">You haven`t submitted any reviews yet.</p>
-        )}
-      </div>
-    </main>
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex items-start space-x-4">
+            <div className="bg-yellow-100 p-3 rounded-lg">
+              <StarIcon className="w-6 h-6 text-yellow-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Your Average Rating</p>
+              <p className="text-2xl font-bold text-gray-900">{averageRatingGiven}</p>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          {reviews.length > 0 ? (
+            <ReviewList reviews={reviews} onEditClick={handleEditClick} />
+          ) : (
+            <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm text-center">
+              <p className="text-gray-500">You haven`t submitted any reviews yet.</p>
+              <Link href="/companies" className="mt-4 inline-block text-sm font-semibold text-blue-600 hover:text-blue-500">
+                  Start exploring companies &rarr;
+              </Link>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <EditReviewModal 
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        review={selectedReview}
+        onReviewUpdated={handleReviewUpdated}
+      />
+    </>
   );
 }

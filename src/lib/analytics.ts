@@ -1,7 +1,7 @@
 // src/lib/analytics.ts
 import { type Review } from "@/components/ReviewList";
 
-// This is the missing piece: Define and export the type
+// Dışa aktarılan (exported) tip tanımı
 export type AnalyticsData = {
   reviewCount: number;
   averageRating: number;
@@ -10,8 +10,7 @@ export type AnalyticsData = {
   topNegativeTags: Array<{ tag: string; count: number }>;
 };
 
-
-export function calculateAnalytics(reviews: Review[]): AnalyticsData { // Ensure the function returns the defined type
+export function calculateAnalytics(reviews: Review[]): AnalyticsData {
   const reviewCount = reviews.length;
   const averageRating = reviewCount > 0 
     ? reviews.reduce((acc, review) => acc + (review.rating || 0), 0) / reviewCount

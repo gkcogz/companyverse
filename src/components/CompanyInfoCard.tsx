@@ -5,8 +5,9 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { type Company } from '@/components/CompanyCard';
 import { SparklesIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
-import SentimentGauge from './SentimentGauge';
+import SentimentGauge from './SentimentGauge'; // Assuming this component exists or will be created
 
+// The type definition for the analytics data passed from the parent
 export type AnalyticsData = {
   reviewCount: number;
   averageRating: number;
@@ -15,6 +16,7 @@ export type AnalyticsData = {
   topNegativeTags: Array<{ tag: string; count: number; }>;
 };
 
+// The type definition for the component's props
 type CompanyInfoCardProps = {
   company: Company & { description: string | null; ai_summary: string | null };
   analytics: AnalyticsData;
@@ -26,12 +28,19 @@ const CompanyInfoCard = ({ company, analytics }: CompanyInfoCardProps) => {
 
   const handleGenerateSummary = async () => {
     setIsSummaryLoading(true);
+    // Placeholder for the actual API call to your Netlify function
     await new Promise(resolve => setTimeout(resolve, 2000));
     const newSummary = "This is a new AI-generated summary highlighting key customer feedback points.";
     setSummary(newSummary);
     setIsSummaryLoading(false);
   };
   
+  // Safeguard: If analytics data is not yet available, render nothing or a loading state
+  if (!analytics || !analytics.distribution || !analytics.topPositiveTags || !analytics.topNegativeTags) {
+    return null; // or return a loading spinner, e.g., <div>Loading Analytics...</div>
+  }
+
+  // Calculations for scores and percentages
   const ratingScore = analytics.averageRating * 20;
   const totalPositiveCount = analytics.topPositiveTags.reduce((sum, tag) => sum + tag.count, 0);
   const totalNegativeCount = analytics.topNegativeTags.reduce((sum, tag) => sum + tag.count, 0);
@@ -102,7 +111,7 @@ const CompanyInfoCard = ({ company, analytics }: CompanyInfoCardProps) => {
                   </ul>
                   <div className="absolute left-1/2 -translate-x-1/2 top-full w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
                 </div>
-              </div>
+             </div>
              <div className="flex justify-center">
                <SentimentGauge score={finalSentimentScore} />
              </div>

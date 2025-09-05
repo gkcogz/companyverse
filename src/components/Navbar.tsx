@@ -1,5 +1,5 @@
 // src/components/Navbar.tsx
-'use client'; 
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -17,17 +17,26 @@ const Navbar = () => {
         setIsMenuOpen(false);
       }
     };
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsMenuOpen(false);
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEsc);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEsc);
     };
   }, []);
 
   return (
     <header className="fixed top-0 left-0 w-full z-50">
-      <nav className="container mx-auto px-6 py-3 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-200">
-        
-        <Link href="/" className="flex items-center">
+      <nav
+        className="container mx-auto px-6 py-3 flex justify-between items-center bg-white/80 backdrop-blur-md border-b border-gray-200"
+        aria-label="Main"
+      >
+        {/* Logo */}
+        <Link href="/" className="flex items-center" aria-label="CompanyVerse Home">
           <Image
             src="/images/cv-logo-1-png.png"
             alt="CompanyVerse Logo"
@@ -39,34 +48,56 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center space-x-4">
-          
+          {/* Dropdown */}
           <div className="relative" ref={menuRef}>
             <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => setIsMenuOpen((v) => !v)}
               className="p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500"
-              aria-label="Main menu"
+              aria-label="Open menu"
+              aria-haspopup="menu"
+              aria-expanded={isMenuOpen}
             >
-              {isMenuOpen ? (
-                <XMarkIcon className="h-6 w-6" />
-              ) : (
-                <Bars3Icon className="h-6 w-6" />
-              )}
+              {isMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
             </button>
 
             {isMenuOpen && (
-              // DEĞİŞİKLİK: "Blog" linki eklendi
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50">
+              <div
+                className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50"
+                role="menu"
+                aria-orientation="vertical"
+              >
                 <Link
                   href="/about"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
                 >
                   About CompanyVerse
                 </Link>
+
                 <Link
-                  href="/blog" // Yeni blog sayfasının yolu
+                  href="/companies"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                >
+                  Companies
+                </Link>
+
+                <Link
+                  href="/admin_reviews/veeva"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                >
+                  Admin Reviews
+                </Link>
+
+                <Link
+                  href="/blog"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
                 >
                   Blog
                 </Link>
@@ -74,8 +105,8 @@ const Navbar = () => {
             )}
           </div>
 
+          {/* Auth */}
           <Login />
-
         </div>
       </nav>
     </header>

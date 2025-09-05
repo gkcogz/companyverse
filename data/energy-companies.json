@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Northvolt",
+    "country": "Sweden",
+    "description": "A leading supplier of sustainable, high-quality battery cells and systems, specializing in lithium-ion technology for electric vehicles and energy storage.",
+    "category": "Sustainable Energy",
+    "metadata": {
+      "technology_focus": "Lithium-ion Batteries",
+      "founded_year": 2016
+    }
+  },
+  {
+    "name": "H2 Green Steel",
+    "country": "Sweden",
+    "description": "Founded in 2020 with the ambition to accelerate the decarbonization of the steel industry, using green hydrogen produced from renewable energy sources.",
+    "category": "Sustainable Energy",
+    "metadata": {
+      "technology_focus": "Green Hydrogen Steel",
+      "founded_year": 2020
+    }
+  },
+  {
+    "name": "Synhelion",
+    "country": "Switzerland",
+    "description": "A global pioneer in the field of solar fuels, turning sunlight into a sustainable alternative to fossil fuels.",
+    "category": "Sustainable Energy",
+    "metadata": {
+      "technology_focus": "Solar Fuels",
+      "founded_year": 2016
+    }
+  },
+  {
+    "name": "Climeworks",
+    "country": "Switzerland",
+    "description": "Specializes in direct air capture (DAC) technology to capture carbon dioxide directly from the air.",
+    "category": "Sustainable Energy",
+    "metadata": {
+      "technology_focus": "Direct Air Capture (DAC)",
+      "founded_year": 2009
+    }
+  }
+]
