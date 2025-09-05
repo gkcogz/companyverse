@@ -3,15 +3,14 @@ import { createClient } from '@/utils/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/solid';
-import EditReviewForm from '@/components/EditReviewForm'; // YENİ BİLEŞENİ IMPORT EDİYORUZ
+import EditReviewForm from '@/components/EditReviewForm';
 
-type EditReviewPageProps = {
-  params: {
-    id: string;
-  }
-}
+// Route params tipini Promise üzerinden tanımla
+type RouteParams = { id: string };
+type PageAsyncProps = { params: Promise<RouteParams> };
 
-export default async function EditReviewPage({ params }: EditReviewPageProps) {
+export default async function EditReviewPage({ params }: PageAsyncProps) {
+  const { id } = await params;            // <-- önemli: await
   const supabase = await createClient();
 
   const { data: { session } } = await supabase.auth.getSession();
@@ -19,8 +18,8 @@ export default async function EditReviewPage({ params }: EditReviewPageProps) {
     redirect('/');
   }
 
-  const reviewId = Number(params.id);
-  if (isNaN(reviewId)) {
+  const reviewId = Number(id);
+  if (Number.isNaN(reviewId)) {
     notFound();
   }
 
@@ -38,7 +37,10 @@ export default async function EditReviewPage({ params }: EditReviewPageProps) {
   return (
     <main className="container mx-auto px-6 py-24 sm:py-32">
       <div className="mb-8">
-        <Link href="/profile" className="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 transition-colors">
+        <Link
+          href="/profile"
+          className="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 transition-colors"
+        >
           <ChevronLeftIcon className="w-5 h-5 mr-2" />
           Back to My Profile
         </Link>
@@ -50,8 +52,7 @@ export default async function EditReviewPage({ params }: EditReviewPageProps) {
       </div>
 
       <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
-         {/* "Edit form will be here" YERİNE ARTIK GERÇEK FORMU KOYUYORUZ */}
-         <EditReviewForm review={review} />
+        <EditReviewForm review={review} />
       </div>
     </main>
   );

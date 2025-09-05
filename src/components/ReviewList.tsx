@@ -5,14 +5,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PencilSquareIcon } from '@heroicons/react/24/outline';
 
-// Review tipini, profiles objesi içinde 'id' içerecek şekilde güncelliyoruz
+// Review tipini güncelliyoruz
 export type Review = {
   id: number;
   created_at: string;
   content: string | null;
   rating: number | null;
   profiles: {
-    id: string; // Bu alan, 'existingUserReview' mantığının çalışması için gerekli
+    id: string; // EKSİK OLAN VE YENİ EKLENEN ALAN
     username: string | null;
     avatar_url: string | null;
   } | null;
