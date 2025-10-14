@@ -1,4 +1,3 @@
-// src/components/Navbar.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -45,14 +44,16 @@ const Navbar = () => {
             className="h-10 w-10 mr-2"
             priority
           />
+          <span className="font-semibold text-gray-800 text-lg">CompanyVerse</span>
         </Link>
 
+        {/* Right Side */}
         <div className="flex items-center space-x-4">
-          {/* Dropdown */}
+          {/* Dropdown Menu */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setIsMenuOpen((v) => !v)}
-              className="p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-purple-500"
+              className="p-1 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
               aria-label="Open menu"
               aria-haspopup="menu"
               aria-expanded={isMenuOpen}
@@ -62,17 +63,18 @@ const Navbar = () => {
 
             {isMenuOpen && (
               <div
-                className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50"
+                className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 z-50"
                 role="menu"
                 aria-orientation="vertical"
               >
+                {/* Core Pages */}
                 <Link
                   href="/about"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={() => setIsMenuOpen(false)}
                   role="menuitem"
                 >
-                  About CompanyVerse
+                  About 
                 </Link>
 
                 <Link
@@ -84,15 +86,44 @@ const Navbar = () => {
                   Companies
                 </Link>
 
+                {/* Reviews Section */}
+                <div className="border-t border-gray-100 my-1" />
+                <span className="block px-4 py-2 text-sm font-semibold text-gray-900">
+                  Reviews
+                </span>
                 <Link
-                  href="/admin_reviews/veeva"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  href="/reviews/veeva"
+                  className="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   onClick={() => setIsMenuOpen(false)}
                   role="menuitem"
                 >
-                  Admin Reviews
+                  Veeva Review
+                </Link>
+                <Link
+                  href="/reviews/mckinsey"
+                  className="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                >
+                  McKinsey Review
                 </Link>
 
+                {/* Resources Section */}
+                <div className="border-t border-gray-100 my-1" />
+                <span className="block px-4 py-2 text-sm font-semibold text-gray-900">
+                  Resources
+                </span>
+                <Link
+                  href="/resources/freelancer-tax-guide-2026"
+                  className="block px-6 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                  role="menuitem"
+                >
+                  Freelancer Tax Guide 2026
+                </Link>
+
+                {/* Blog */}
+                <div className="border-t border-gray-100 my-1" />
                 <Link
                   href="/blog"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
